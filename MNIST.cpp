@@ -4,24 +4,35 @@
 #include "onnxruntime_cxx_api.h"
 #include <assert.h>
 #include <iostream>
+#include <string>
+#include <string_view>
 #include <vector>
 
 using std::cout;
 using std::vector;
 
-int main() {
+int main(int argc, const char **argv) {
+
+  std::string model_path = "";
+  if (argc > 1) {
+    for (int i = 1; i < argc; ++i)
+      if (std::string_view{argv[i]} == "-f" && ++i < argc)
+        model_path = argv[i];
+  } else {
+    std::cout << "To specify a map file use the following format: "
+              << std::endl;
+    std::cout << "Usage: [executable] [-f filename.onnx]" << std::endl;
+    model_path = "../squeezenet/model.onnx";
+  }
 
   Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "test");
 
   // initialize session options if needed
   Ort::SessionOptions session_options;
 
-  const char *model_path =
-      "/home/yuchunli/git/onnx_custum_op/squeezenet/model.onnx";
-
   printf("Using Onnxruntime C++ API\n");
 
-  Ort::Session session(env, model_path, session_options);
+  Ort::Session session(env, model_path.c_str(), session_options);
 
   //*************************************************************************
   // print model input layer (node names, types, shape etc.)
