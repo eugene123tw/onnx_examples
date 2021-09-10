@@ -27,7 +27,8 @@ int main(int argc, const char **argv) {
   }
 
   // MNIST(model_path);
-  mDCN(model_path);
+  // mDCN(model_path);
+  DCN(model_path);
 
   printf("Done!\n");
   return 0;

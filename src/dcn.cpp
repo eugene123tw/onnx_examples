@@ -1,3 +1,4 @@
+#include "deform_conv.h"
 #include "modulated_deform_conv.h"
 #include "onnxruntime_cxx_api.h"
 #include <iostream>
@@ -30,7 +31,45 @@ void get_input_name(Ort::Session const &session) {
   }
 }
 
+void get_output_name(Ort::Session const &session) {
+  Ort::AllocatorWithDefaultOptions allocator;
+  size_t num_output = session.GetOutputCount();
+  for (int i = 0; i < num_output; i++) {
+    // print input node names
+    char *output_name = session.GetOutputName(i, allocator);
+    printf("Output %d : name=%s\n", i, output_name);
+
+    // print input node types
+    Ort::TypeInfo type_info = session.GetOutputTypeInfo(i);
+    auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
+
+    ONNXTensorElementDataType type = tensor_info.GetElementType();
+    printf("Output %d : type=%d\n", i, type);
+
+    // print input shapes/dims
+    printf("Output %d : num_dims=%zu\n", i, tensor_info.GetShape().size());
+    for (int j = 0; j < tensor_info.GetShape().size(); j++)
+      printf("Output %d : dim %d=%jd\n", i, j, tensor_info.GetShape()[j]);
+  }
+}
+
 void mDCN(std::string model_path) {
+
+  Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "test");
+
+  MMCVModulatedDeformConvOp mdcn_op{};
+
+  Ort::CustomOpDomain custom_op_domain("mmcv");
+  custom_op_domain.Add(&mdcn_op);
+
+  Ort::SessionOptions session_options;
+  session_options.Add(custom_op_domain);
+  Ort::Session session(env, model_path.c_str(), session_options);
+  get_input_name(session);
+  get_output_name(session);
+}
+
+void DCN(std::string model_path) {
   vector<float> input{
       1., 2., 3., 0., 1., 2., 3., 5., 2.,
   };
@@ -44,18 +83,32 @@ void mDCN(std::string model_path) {
 
   Ort::MemoryInfo mem_info("Cpu", OrtDeviceAllocator, 0, OrtMemTypeDefault);
   auto input_tensor =
-      Ort::Value::CreateTensor<float>(mem_info, input.data(), input.size(),
-                                      input_shape.data(), input_shape.size());
+      Ort::Value::CreateTensor(mem_info, input.data(), input.size(),
+                               input_shape.data(), input_shape.size());
+  auto offset_tensor =
+      Ort::Value::CreateTensor(mem_info, offset.data(), offset.size(),
+                               offset_shape.data(), offset_shape.size());
+
+  vector<const char *> input_names{"input", "offset"};
+  const char *const output_names[] = {"3"};
+
+  std::vector<Ort::Value> ort_inputs;
+  ort_inputs.push_back(std::move(input_tensor));
+  ort_inputs.push_back(std::move(offset_tensor));
 
   Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "test");
 
-  MMCVModulatedDeformConvOp mdcn_op{};
+  MMCVDeformConvOp dcn_op{};
 
   Ort::CustomOpDomain custom_op_domain("mmcv");
-  custom_op_domain.Add(&mdcn_op);
+  custom_op_domain.Add(&dcn_op);
 
   Ort::SessionOptions session_options;
   session_options.Add(custom_op_domain);
   Ort::Session session(env, model_path.c_str(), session_options);
-  get_input_name(session);
+  // get_input_name(session);
+  // get_output_name(session);
+  auto ort_outputs =
+      session.Run(Ort::RunOptions{}, input_names.data(), ort_inputs.data(),
+                  ort_inputs.size(), output_names, 1);
 }
