@@ -11,5 +11,5 @@ project(ONNX_CPP_EXAMPLES)
 find_package(OnnxRuntime)
 
 # Add the testing executable
-add_executable(MNIST MNIST.cpp)
-target_link_libraries(MNIST OnnxRuntime)
+add_executable(main src/main.cpp src/MNIST.cpp src/dcn.cpp src/onnxruntime_register.cpp src/modulated_deform_conv.cpp)
+target_link_libraries(main OnnxRuntime)

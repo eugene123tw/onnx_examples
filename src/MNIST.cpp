@@ -11,20 +11,7 @@
 using std::cout;
 using std::vector;
 
-int main(int argc, const char **argv) {
-
-  std::string model_path = "";
-  if (argc > 1) {
-    for (int i = 1; i < argc; ++i)
-      if (std::string_view{argv[i]} == "-f" && ++i < argc)
-        model_path = argv[i];
-  } else {
-    std::cout << "To specify a map file use the following format: "
-              << std::endl;
-    std::cout << "Usage: [executable] [-f filename.onnx]" << std::endl;
-    model_path = "../squeezenet/model.onnx";
-  }
-
+void MNIST(std::string const model_path) {
   Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "test");
 
   // initialize session options if needed
@@ -111,7 +98,4 @@ int main(int argc, const char **argv) {
   // score the model, and print scores for first 5 classes
   for (int i = 0; i < 5; i++)
     printf("Score for class [%d] =  %f\n", i, floatarr[i]);
-
-  printf("Done!\n");
-  return 0;
 }
