@@ -5,7 +5,9 @@
       "includePath": [
         "${workspaceFolder}/**",
         "/usr/include/python3.6m",
-        "/home/yuchunli/git/onnxruntime-linux-x64-1.8.1/include"
+        "/home/yuchunli/git/onnxruntime-linux-x64-1.8.1/include",
+        "/home/yuchunli/git/libtorch-shared-with-deps-1.8.2+cpu/libtorch/include",
+        "/home/yuchunli/git/libtorch-shared-with-deps-1.8.2+cpu/libtorch/include/torch/csrc/api/include"
       ],
       "defines": [],
       "compilerPath": "/usr/bin/gcc",
