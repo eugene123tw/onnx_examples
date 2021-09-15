@@ -111,4 +111,8 @@ void DCN(std::string model_path) {
   auto ort_outputs =
       session.Run(Ort::RunOptions{}, input_names.data(), ort_inputs.data(),
                   ort_inputs.size(), output_names, 1);
+  std::cout << "Output Size: " << ort_outputs.size() << std::endl;
+  float *floatarr = ort_outputs.front().GetTensorMutableData<float>();
+  for (int i = 0; i < 4; i++)
+    printf("value for index:[%d] =  %f\n", i, floatarr[i]);
 }
